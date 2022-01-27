@@ -1,29 +1,33 @@
 import validator from 'validator'
 
-interface validateParamInterface {
+interface paramsValidationInterface {
    username: string
    email: string
    password: string
    confirmPassword: string
 }
 
-export async function validationExamination(obj: validateParamInterface): Promise<boolean | string> {
-   const {username, email, password, confirmPassword} = obj
-   const rulesForUsername = validator.isLength(username, {min: 4, max: 15})
-   const rulesForPasswords = password === confirmPassword
-   const validEmail = validator.isEmail(email)
+export function validateControl(obj: paramsValidationInterface) {
+   return new Promise((resolve, reject) => {
+      const errors: string[] = []
+      const {email, password, confirmPassword} = obj
 
-   if (!rulesForUsername) {
-      return 'Min length is 4 and max length 15 for username.'
-   }
+      if (!validator.isEmail(email)) {
+         errors.push('Not a valid email.')
+      }
 
-   if (!rulesForPasswords) {
-      return 'Password and confirm password must be the same.'
-   }
+      if (!validator.isLength(password, {max: 20, min: 7})) {
+         errors.push('Max length password is 20, min length: 7')
+      }
 
-   if (!validEmail) {
-      return 'Email is not a valid'
-   }
+      if (!validator.equals(password, confirmPassword)) {
+         errors.push('Password and confirm password not equal.')
+      }
 
-   return true
+      if (errors.length == 0) {
+         resolve('All good.')
+      } else {
+         reject(errors)
+      }
+   })
 }

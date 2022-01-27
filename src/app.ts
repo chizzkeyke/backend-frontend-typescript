@@ -6,14 +6,15 @@ import logger from './logger/logger.service'
 import { routerPost } from './resourses/post/post.router'
 import { routerUser } from './resourses/user/user.router'
 
+
 const app = express()
 const port: number = 8000
-const urlDatabase: string = "mongodb+srv://romeo:1223@cluster0.tnknp.mongodb.net/myFirstDatabase?retryWrites=true&w=majority"
+const urlDB: string = 'mongodb+srv://romeo:minigun9876@cluster0.xyeha.mongodb.net/myFirstDatabase?retryWrites=true&w=majority'
 
 app.use(cors())
 app.use(express.json())
 app.use('/api', routerPost)
-app.use('/api/user', routerUser)
+app.use('/api', routerUser)
 
 app.get('/', (req: Request, res: Response) => {
    logger.log('Запрос на путь "/"')
@@ -24,7 +25,7 @@ app.get('/', (req: Request, res: Response) => {
 
 const bootstrap = async (): Promise<void> => {
    try {
-      await mongoose.connect(urlDatabase)
+      await mongoose.connect(urlDB)
       app.listen(port, () => {
          logger.log(`Server start work on port ${port}`)
       })
@@ -33,6 +34,10 @@ const bootstrap = async (): Promise<void> => {
    }
 }
 
-bootstrap().then(() => {
-   logger.log('Server work and successful connect to database.')
-})
+bootstrap()
+   .then(() => {
+      logger.log('connected to db is successful')
+   })
+   .catch(() => {
+      logger.log('Server not work.')
+   })
