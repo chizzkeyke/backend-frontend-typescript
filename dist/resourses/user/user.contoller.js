@@ -22,7 +22,7 @@ function getJWT(email, secret, role) {
     const payload = {
         email, role
     };
-    return (0, jsonwebtoken_1.sign)(payload, secret, { expiresIn: '24h' });
+    return (0, jsonwebtoken_1.sign)(payload, secret);
 }
 class userController {
     register(req, res) {
@@ -30,12 +30,21 @@ class userController {
             try {
                 const { username, email, password } = req.body;
                 const candidate = yield user_model_1.modelUser.findOne({ username });
+                const checkEmail = yield user_model_1.modelUser.findOne({ email });
+                const errors = [];
                 if (candidate) {
+                    errors.push('Пользователь с этим именем уже существует.');
+                }
+                if (checkEmail) {
+                    errors.push('Пользователь с таким Email уже зарегестрирован.');
+                }
+                if (errors.length !== 0) {
                     return res.status(400).json({
-                        message: 'The user with this login exists.'
+                        message: errors
                     });
                 }
                 const role = yield role_model_1.modelRole.findOne({ value: 'USER' });
+                console.log(role);
                 const token = getJWT(email, 'Sedfewrg', 'USER');
                 const newHashPassword = (0, hashPassword_1.hashPassword)(password);
                 const newUser = yield user_model_1.modelUser.create({
@@ -46,9 +55,11 @@ class userController {
                     role
                 });
                 yield newUser.save();
+                const dataResponse = yield user_model_1.modelUser.findOne({ username });
                 return res.status(201).json({
                     message: 'New user was created.',
-                    data: token
+                    userData: dataResponse,
+                    token: token
                 });
             }
             catch (e) {
@@ -81,25 +92,27 @@ class userController {
                 });
             }
             catch (e) {
-                logger_service_1.default.error('');
+                logger_service_1.default.error('suck');
             }
         });
     }
-    getJWT(email, secret) {
-        return new Promise((resolve, reject) => {
-            (0, jsonwebtoken_1.sign)({
-                email,
-                iat: Math.floor(Date.now() / 1000),
-            }, secret, {
-                algorithm: 'HS256'
-            }, (err, token) => {
-                if (err) {
-                    reject(err);
-                }
-                resolve(token);
-            });
-        });
-    }
+    // private getJWT(email: string, secret: string): Promise<string> {
+    //    return new Promise<string>((resolve, reject) => {
+    //       sign({
+    //             email,
+    //             iat: Math.floor(Date.now() / 1000),
+    //
+    //          }, secret, {
+    //             algorithm: 'HS256'
+    //          },
+    //          (err, token) => {
+    //             if (err) {
+    //                reject(err)
+    //             }
+    //             resolve(token as string)
+    //          })
+    //    })
+    // }
     getDataAboutAuthUser() {
     }
 }

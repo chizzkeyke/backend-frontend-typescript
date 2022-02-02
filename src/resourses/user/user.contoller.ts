@@ -11,7 +11,7 @@ function getJWT(email: string, secret: string, role: string) {
       email, role
    }
 
-   return sign(payload, secret, {expiresIn: '24h'})
+   return sign(payload, secret)
 }
 
 class userController {
@@ -19,14 +19,27 @@ class userController {
       try {
          const {username, email, password} = req.body
          const candidate = await modelUser.findOne({username})
+         const checkEmail = await modelUser.findOne({email})
+         const errors: string[] = []
 
          if (candidate) {
+            errors.push('Пользователь с этим именем уже существует.')
+         }
+
+         if (checkEmail) {
+            errors.push('Пользователь с таким Email уже зарегестрирован.')
+         }
+
+         if (errors.length !== 0) {
             return res.status(400).json({
-               message: 'The user with this login exists.'
+               message: errors
             })
          }
 
          const role = await modelRole.findOne({value: 'USER'})
+
+         console.log(role)
+
          const token = getJWT(email, 'Sedfewrg', 'USER')
          const newHashPassword = hashPassword(password)
          const newUser = await modelUser.create({
@@ -38,9 +51,13 @@ class userController {
          })
          await newUser.save()
 
+         const dataResponse = await modelUser.findOne({username})
+
+
          return res.status(201).json({
             message: 'New user was created.',
-            data: token
+            userData: dataResponse,
+            token: token
          })
 
       } catch (e) {
@@ -76,27 +93,27 @@ class userController {
          })
 
       } catch (e) {
-         logger.error('')
+         logger.error('suck')
       }
    }
 
-   private getJWT(email: string, secret: string): Promise<string> {
-      return new Promise<string>((resolve, reject) => {
-         sign({
-               email,
-               iat: Math.floor(Date.now() / 1000),
-
-            }, secret, {
-               algorithm: 'HS256'
-            },
-            (err, token) => {
-               if (err) {
-                  reject(err)
-               }
-               resolve(token as string)
-            })
-      })
-   }
+   // private getJWT(email: string, secret: string): Promise<string> {
+   //    return new Promise<string>((resolve, reject) => {
+   //       sign({
+   //             email,
+   //             iat: Math.floor(Date.now() / 1000),
+   //
+   //          }, secret, {
+   //             algorithm: 'HS256'
+   //          },
+   //          (err, token) => {
+   //             if (err) {
+   //                reject(err)
+   //             }
+   //             resolve(token as string)
+   //          })
+   //    })
+   // }
 
    getDataAboutAuthUser() {
 
