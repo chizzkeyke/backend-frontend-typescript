@@ -6,6 +6,7 @@ import logger from './logger/logger.service'
 import { routerPost } from './resourses/post/post.router'
 import { routerUser } from './resourses/user/user.router'
 import { routerRole } from './resourses/role/role.router'
+import { routerComment } from './resourses/comment/comment.router'
 
 const app = express()
 const port: number = 8000
@@ -16,6 +17,7 @@ app.use(express.json())
 app.use('/api', routerPost)
 app.use('/api', routerUser)
 app.use('/api', routerRole)
+app.use('/api', routerComment)
 
 const bootstrap = async (): Promise<void> => {
    try {
@@ -44,6 +46,10 @@ class App {
    
    constructor(middlewares: Object[]) {
       this.app = app
+   }
+
+   private initialRoutes() {
+      
    }
 
    private initializeMiddleware(): void{

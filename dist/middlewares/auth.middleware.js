@@ -1,23 +1,26 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.AuthMiddleware = void 0;
+exports.authMiddleware = void 0;
 const jsonwebtoken_1 = require("jsonwebtoken");
-class AuthMiddleware {
-    constructor(secret) {
-        this.secret = secret;
+function authMiddleware(req, res, next) {
+    var _a;
+    if (req.method === 'OPTIONS') {
+        next();
     }
-    execute(req, res, next) {
-        if (req.headers.authorization) {
-            (0, jsonwebtoken_1.verify)(req.headers.authorization.split(' ')[1], this.secret, (err, payload) => {
-                if (err) {
-                    next();
-                }
-                else if (payload) {
-                    // req.user = payload.email
-                    next();
-                }
+    try {
+        const token = (_a = req.headers.authorization) === null || _a === void 0 ? void 0 : _a.split(' ')[1];
+        if (!token) {
+            return res.status(403).json({
+                error: 'User is not authenticated.'
             });
         }
+        const decodedData = (0, jsonwebtoken_1.verify)(token, 'Sedfewrg');
+        next();
+    }
+    catch (e) {
+        return res.status(500).json({
+            message: 'Error on server.'
+        });
     }
 }
-exports.AuthMiddleware = AuthMiddleware;
+exports.authMiddleware = authMiddleware;

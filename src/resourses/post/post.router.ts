@@ -1,11 +1,14 @@
 import { Router } from 'express'
+import { authMiddleware } from '../../middlewares/auth.middleware'
+import { postController } from './post.controller'
 
 const routerPost = Router()
 
-routerPost.get('/post')
-routerPost.get('/post/:id')
-routerPost.post('/post')
-routerPost.put('/post')
-routerPost.delete('/post/:id')
+routerPost.use('/post', authMiddleware)
+routerPost.get('/post', postController.getPosts)
+routerPost.get('/post/:id', postController.getPost)
+routerPost.post('/post', postController.createPost)
+routerPost.put('/post', postController.putPost)
+routerPost.delete('/post/:id', postController.deletePost)
 
 export { routerPost }

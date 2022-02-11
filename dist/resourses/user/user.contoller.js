@@ -44,7 +44,6 @@ class userController {
                     });
                 }
                 const role = yield role_model_1.modelRole.findOne({ value: 'USER' });
-                console.log(role);
                 const token = getJWT(email, 'Sedfewrg', 'USER');
                 const newHashPassword = (0, hashPassword_1.hashPassword)(password);
                 const newUser = yield user_model_1.modelUser.create({
@@ -55,10 +54,8 @@ class userController {
                     role
                 });
                 yield newUser.save();
-                const dataResponse = yield user_model_1.modelUser.findOne({ username });
                 return res.status(201).json({
                     message: 'New user was created.',
-                    userData: dataResponse,
                     token: token
                 });
             }
@@ -113,7 +110,22 @@ class userController {
     //          })
     //    })
     // }
-    getDataAboutAuthUser() {
+    getDataAboutAuthUser(req, res) {
+        var _a;
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                const token = (_a = req.headers.authorization) === null || _a === void 0 ? void 0 : _a.split(' ')[1];
+                const user = yield user_model_1.modelUser.findOne({ token });
+                return res.status(200).json({
+                    data: user
+                });
+            }
+            catch (e) {
+                return res.status(500).json({
+                    error: 'Server error.'
+                });
+            }
+        });
     }
 }
 exports.default = new userController();

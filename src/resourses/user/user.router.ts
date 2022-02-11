@@ -1,12 +1,12 @@
 import { Router } from 'express'
 import userController from '../user/user.contoller'
-import { validationMiddlewareCreateUser } from '../../middlewares/validationMiddleware'
+import {authMiddleware} from '../../middlewares/auth.middleware'
 
 const routerUser = Router()
 
-routerUser.use('/register' || '/login', validationMiddlewareCreateUser)
+routerUser.use('/self', authMiddleware)
 routerUser.post('/login', userController.login)
 routerUser.post('/register', userController.register)
-routerUser.get('/self')
+routerUser.get('/self', userController.getDataAboutAuthUser)
 
 export { routerUser }

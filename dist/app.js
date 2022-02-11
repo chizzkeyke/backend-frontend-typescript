@@ -19,6 +19,7 @@ const logger_service_1 = __importDefault(require("./logger/logger.service"));
 const post_router_1 = require("./resourses/post/post.router");
 const user_router_1 = require("./resourses/user/user.router");
 const role_router_1 = require("./resourses/role/role.router");
+const comment_router_1 = require("./resourses/comment/comment.router");
 const app = (0, express_1.default)();
 const port = 8000;
 const mongoDbURL = 'mongodb://localhost:27017/backend-typescript';
@@ -27,6 +28,7 @@ app.use(express_1.default.json());
 app.use('/api', post_router_1.routerPost);
 app.use('/api', user_router_1.routerUser);
 app.use('/api', role_router_1.routerRole);
+app.use('/api', comment_router_1.routerComment);
 const bootstrap = () => __awaiter(void 0, void 0, void 0, function* () {
     try {
         yield mongoose_1.default.connect(mongoDbURL);
@@ -50,6 +52,8 @@ class App {
         this.port = 8000;
         this.urlDB = 'mongodb://localhost:27017/backend-typescript';
         this.app = app;
+    }
+    initialRoutes() {
     }
     initializeMiddleware() {
         this.app.use(express_1.default.json());

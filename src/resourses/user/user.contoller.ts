@@ -37,9 +37,6 @@ class userController {
          }
 
          const role = await modelRole.findOne({value: 'USER'})
-
-         console.log(role)
-
          const token = getJWT(email, 'Sedfewrg', 'USER')
          const newHashPassword = hashPassword(password)
          const newUser = await modelUser.create({
@@ -51,12 +48,8 @@ class userController {
          })
          await newUser.save()
 
-         const dataResponse = await modelUser.findOne({username})
-
-
          return res.status(201).json({
             message: 'New user was created.',
-            userData: dataResponse,
             token: token
          })
 
@@ -115,8 +108,20 @@ class userController {
    //    })
    // }
 
-   getDataAboutAuthUser() {
+   async getDataAboutAuthUser(req: Request, res: Response) {
+      try {
+         const token: string | undefined = req.headers.authorization?.split(' ')[1]
+         const user = await modelUser.findOne({token})
 
+         return res.status(200).json({
+            data: user
+         })
+
+      } catch (e) {
+         return res.status(500).json({
+            error: 'Server error.'
+         })
+      }
    }
 }
 
