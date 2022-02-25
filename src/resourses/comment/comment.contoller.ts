@@ -3,52 +3,78 @@ import { modelComment } from './comment.model'
 import { modelPost } from '../post/post.model'
 import { modelUser } from '../user/user.model'
 import { nanoid } from 'nanoid'
+import { createCommentSelectedPost, getCommentsSelectedPost, updateCommentSelectedPost, deleteSelectedComment } from './comment.service'
 
 export class CommentController {
-   async getCommentsSelectedPost(req: Request, res: Response) {
+   async getComments(req: Request, res: Response) {
       try {
-         const {idPost} = req.params
+         const { idPost } = req.params
+
+         const commentsPost = await getCommentsSelectedPost(idPost)
+
+         return res.status(200).json({
+            data: commentsPost
+         })
 
       } catch (e) {
-
+         return res.status(400).json({
+            message: 'Error create comment.'
+         })
       }
    }
 
-   async postCommentSelectedPost(req: Request, res: Response) {
+   async postComment(req: Request, res: Response) {
       try {
-         const {idPost, body, author} = req.body
-         const selectPost = await modelPost.findOne({id: idPost})
-         const senderName = await modelUser.findOne({username: author})
+         const { idPost } = req.params
+         const { body, author } = req.body
 
-         if (!selectPost) {
-            return res.status(400).json({
-               error: 'Post is not a find.'
-            })
-         }
-
-         if (!senderName) {
-            return res.status(400).json({
-               error: 'Author is undefined.'
-            })
-         }
-
-         const newComment = await modelComment.create({
-            id: nanoid(),
-            idPost,
-            author,
-            body,
-            date_created: Date.now()
-         })
-
-         await newComment.save()
+         const newComment = await createCommentSelectedPost(idPost, author, body)
 
          return res.status(200).json({
             data: newComment
          })
+
       } catch (e) {
-         console.log(e)
-         return res.status(400).json({
+         return res.status(500).json({
             message: 'Error create comment.'
+         })
+      }
+   }
+
+   async putComment(req: Request, res: Response) {
+      try {
+         const { idPost } = req.params
+         const { author, body, idComment } = req.body
+
+         const updatePost = await updateCommentSelectedPost(idPost, idComment, author, body)
+
+         return res.status(200).json({
+            data: updatePost
+         })
+
+      } catch (error) {
+         return res.status(500).json({
+            error
+         })
+      }
+   }
+
+   async deleteComment(req: Request, res: Response) {
+      try {
+         const { idComment } = req.params
+         const token = req.headers.authorization?.split(' ')[1]
+
+         if (!token) throw 'Token is not a find.'
+
+         const result = await deleteSelectedComment(token, idComment)
+
+         res.status(200).json({
+            data: result
+         })
+
+      } catch (error) {
+         return res.status(500).json({
+            error
          })
       }
    }

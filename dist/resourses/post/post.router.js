@@ -9,6 +9,7 @@ exports.routerPost = routerPost;
 routerPost.use('/post', auth_middleware_1.authMiddleware);
 routerPost.get('/post', post_controller_1.postController.getPosts);
 routerPost.get('/post/:id', post_controller_1.postController.getPost);
+routerPost.get('/posts/:username', post_controller_1.postController.getPostsAuthUser);
 routerPost.post('/post', post_controller_1.postController.createPost);
 routerPost.put('/post', post_controller_1.postController.putPost);
 routerPost.delete('/post/:id', post_controller_1.postController.deletePost);

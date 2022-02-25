@@ -1,20 +1,15 @@
 import { Request, Response } from 'express'
 import { modelUser } from '../user/user.model'
 import { modelPost } from './post.model'
-import { nanoid } from 'nanoid'
+import { getNewPosts, getOnePost, createPost, updatePost, deletePost, getPostsAuthUser } from './post.service'
+
 
 class PostController {
    getPosts = async (req: Request, res: Response) => {
       try {
-         const posts = await modelPost.find()
-         const reversePost = posts.reverse()
-         const data = []
+         const data = await getNewPosts()
 
-         for (let i = 0; i <= 9; i++) {
-            data.push(reversePost[i])
-         }
-
-         return res.status(200).json({
+         res.status(200).json({
             data
          })
 
@@ -28,13 +23,7 @@ class PostController {
    getPost = async (req: Request, res: Response) => {
       try {
          const idPost = req.params.id
-         const foundPost = await modelPost.findOne({id: idPost})
-
-         if (!foundPost) {
-            return res.status(400).json({
-               message: 'Post is not find.'
-            })
-         }
+         const foundPost = await getOnePost(idPost)
 
          return res.status(200).json({
             data: foundPost
@@ -50,27 +39,20 @@ class PostController {
    createPost = async (req: Request, res: Response) => {
       try {
          const token = req.headers.authorization?.split(' ')[1]
-         const user = await modelUser.findOne({token})
+         const { title, body } = req.body
 
-         if (!user) {
+         if (!token) {
             return res.status(400).json({
-               message: 'User is not find.'
+               error: 'User is not undefined.'
             })
          }
 
-         const {title, body} = req.body
+         const createdPost = createPost(title, body, token)
 
-         const createdPost = await modelPost.create({
-            id: nanoid(),
-            title,
-            body,
-            author: user.username
-         })
-
-         await createdPost.save()
          return res.status(201).json({
             data: createdPost
          })
+
       } catch (e) {
          return res.status(500).json({
             message: 'Error server'
@@ -80,17 +62,70 @@ class PostController {
 
    putPost = async (req: Request, res: Response) => {
       try {
+         const { idPost, body, title } = req.body
+         const token = req.headers.authorization?.split(' ')[1]         
 
+         if (!token) {
+            throw res.status(400).json({
+               error: 'Токен гавно'
+            })
+         }
+
+         const updatingPost = await updatePost(idPost, body, title, token)
+
+         return res.status(200).json({
+            data: updatingPost
+         })
       } catch (e) {
-
+         return res.status(500).json({
+            error: e
+         })
       }
    }
 
    deletePost = async (req: Request, res: Response) => {
       try {
+         const token = req.headers.authorization?.split(' ')[1]
+         const idPost = req.params.id
+
+         if (!idPost) {
+            throw 'Id post is not a find.'
+         }
+
+         if (!token) {
+            throw 'Token is shit'
+         }
+
+         const succesfullMessageDelete = await deletePost(idPost, token)
+
+         return res.status(200).json({
+            message: succesfullMessageDelete
+         })
 
       } catch (e) {
+         return res.status(500).json({
+            error: 'Error on server.'
+         })
+      }
+   }
 
+   getPostsAuthUser = async (req: Request, res: Response) => {
+      try {
+         const token = req.headers.authorization?.split(' ')[1]
+
+         if (!token) {
+            throw 'Токен фуфло'
+         }
+
+         const posts = await getPostsAuthUser(token)
+         return res.status(200).json({
+            data: posts
+         })
+
+      } catch (e) {
+         return res.status(500).json({
+            message: e
+         })
       }
    }
 }

@@ -10,53 +10,74 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.CommentController = void 0;
-const comment_model_1 = require("./comment.model");
-const post_model_1 = require("../post/post.model");
-const user_model_1 = require("../user/user.model");
-const nanoid_1 = require("nanoid");
+const comment_service_1 = require("./comment.service");
 class CommentController {
-    getCommentsSelectedPost(req, res) {
+    getComments(req, res) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
                 const { idPost } = req.params;
-                console.log(idPost);
+                const commentsPost = yield (0, comment_service_1.getCommentsSelectedPost)(idPost);
+                return res.status(200).json({
+                    data: commentsPost
+                });
             }
             catch (e) {
+                return res.status(400).json({
+                    message: 'Error create comment.'
+                });
             }
         });
     }
-    postCommentSelectedPost(req, res) {
+    postComment(req, res) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
-                const { idPost, body, author } = req.body;
-                const selectPost = yield post_model_1.modelPost.findOne({ id: idPost });
-                const senderName = yield user_model_1.modelUser.findOne({ username: author });
-                if (!selectPost) {
-                    return res.status(400).json({
-                        error: 'Post is not a find.'
-                    });
-                }
-                if (!senderName) {
-                    return res.status(400).json({
-                        error: 'Author is undefined.'
-                    });
-                }
-                const newComment = yield comment_model_1.modelComment.create({
-                    id: (0, nanoid_1.nanoid)(),
-                    idPost,
-                    author,
-                    body,
-                    date_created: Date.now()
-                });
-                yield newComment.save();
+                const { idPost } = req.params;
+                const { body, author } = req.body;
+                const newComment = yield (0, comment_service_1.createCommentSelectedPost)(idPost, author, body);
                 return res.status(200).json({
                     data: newComment
                 });
             }
             catch (e) {
-                console.log(e);
-                return res.status(400).json({
+                return res.status(500).json({
                     message: 'Error create comment.'
+                });
+            }
+        });
+    }
+    putComment(req, res) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                const { idPost } = req.params;
+                const { author, body, idComment } = req.body;
+                const updatePost = yield (0, comment_service_1.updateCommentSelectedPost)(idPost, idComment, author, body);
+                return res.status(200).json({
+                    data: updatePost
+                });
+            }
+            catch (error) {
+                return res.status(500).json({
+                    error
+                });
+            }
+        });
+    }
+    deleteComment(req, res) {
+        var _a;
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                const { idComment } = req.params;
+                const token = (_a = req.headers.authorization) === null || _a === void 0 ? void 0 : _a.split(' ')[1];
+                if (!token)
+                    throw 'Token is not a find.';
+                const result = yield (0, comment_service_1.deleteSelectedComment)(token, idComment);
+                res.status(200).json({
+                    data: result
+                });
+            }
+            catch (error) {
+                return res.status(500).json({
+                    error
                 });
             }
         });
