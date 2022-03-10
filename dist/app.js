@@ -16,23 +16,39 @@ const express_1 = __importDefault(require("express"));
 const cors_1 = __importDefault(require("cors"));
 const mongoose_1 = __importDefault(require("mongoose"));
 const logger_service_1 = __importDefault(require("./logger/logger.service"));
+const socket_io_1 = require("socket.io");
+const http_1 = __importDefault(require("http"));
 const post_router_1 = require("./resourses/post/post.router");
 const user_router_1 = require("./resourses/user/user.router");
 const role_router_1 = require("./resourses/role/role.router");
 const comment_router_1 = require("./resourses/comment/comment.router");
+const chat_router_1 = require("./resourses/chat/chat.router");
+const message_router_1 = require("./resourses/message/message.router");
+const socket_1 = require("./socket");
 const app = (0, express_1.default)();
 const port = 8000;
 const mongoDbURL = 'mongodb://localhost:27017/backend-typescript';
+const serverHTTP = http_1.default.createServer(app);
+const io = new socket_io_1.Server(serverHTTP, {
+    cors: {
+        origin: 'http://localhost:8000',
+        methods: ['GET', 'POST']
+    },
+    transports: ['websocket']
+});
 app.use((0, cors_1.default)());
 app.use(express_1.default.json());
 app.use('/api', post_router_1.routerPost);
 app.use('/api', user_router_1.routerUser);
 app.use('/api', role_router_1.routerRole);
 app.use('/api', comment_router_1.routerComment);
+app.use('/api', chat_router_1.routerChat);
+app.use('/api', message_router_1.routerMessage);
+(0, socket_1.ioController)(io);
 const bootstrap = () => __awaiter(void 0, void 0, void 0, function* () {
     try {
         yield mongoose_1.default.connect(mongoDbURL);
-        app.listen(port, () => {
+        serverHTTP.listen(port, () => {
             logger_service_1.default.log(`Server start work on port ${port}`);
         });
     }
@@ -41,34 +57,4 @@ const bootstrap = () => __awaiter(void 0, void 0, void 0, function* () {
     }
 });
 bootstrap()
-    .then(() => {
-    logger_service_1.default.log('connected to db is successful');
-})
-    .catch(() => {
-    logger_service_1.default.log('Server not work.');
-});
-class App {
-    constructor(middlewares) {
-        this.port = 8000;
-        this.urlDB = 'mongodb://localhost:27017/backend-typescript';
-        this.app = app;
-    }
-    initialRoutes() {
-    }
-    initializeMiddleware() {
-        this.app.use(express_1.default.json());
-    }
-    connectToDatabase() {
-        return __awaiter(this, void 0, void 0, function* () {
-            yield mongoose_1.default.connect(this.urlDB);
-        });
-    }
-    bootstrap() {
-        return __awaiter(this, void 0, void 0, function* () {
-            yield this.connectToDatabase();
-            this.app.listen(port, () => {
-                logger_service_1.default.log(`Server start work on port ${this.port}`);
-            });
-        });
-    }
-}
+    .catch(err => logger_service_1.default.error(err));

@@ -123,6 +123,25 @@ class userController {
          })
       }
    }
+
+   async getAllUsers(req: Request, res: Response) {
+      try {
+         const users = await modelUser.find()
+
+         if (!users) {
+            throw 'Пользователи не найдены.'
+         }
+
+         return res.status(200).json({
+            data: users
+         })
+
+      } catch (error) {
+         return res.status(400).json({
+            error
+         })
+      }
+   }
 }
 
 export default new userController()

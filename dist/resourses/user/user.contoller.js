@@ -127,5 +127,23 @@ class userController {
             }
         });
     }
+    getAllUsers(req, res) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                const users = yield user_model_1.modelUser.find();
+                if (!users) {
+                    throw 'Пользователи не найдены.';
+                }
+                return res.status(200).json({
+                    data: users
+                });
+            }
+            catch (error) {
+                return res.status(400).json({
+                    error
+                });
+            }
+        });
+    }
 }
 exports.default = new userController();
